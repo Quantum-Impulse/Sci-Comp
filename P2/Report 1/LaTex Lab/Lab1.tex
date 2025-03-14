@@ -1,152 +1,181 @@
-\documentclass[linenumbers,RNAAS,trackchanges]{aastex631}
-\usepackage[utf8]{inputenc}
-\usepackage{hyperref}           % hrefs
-\usepackage{natbib}             % for bibliography
-\usepackage{float}              % figure positioning
-\usepackage{svg}                % used for SVG images
-\usepackage{graphicx}           % used for non-SVG images
-
-% Search Query Metadata
-\shorttitle{Short Title}
-\shortauthors{Corresponding Author's Last Name, et al.}
-
-% Hyperlink setup
-\hypersetup{
-colorlinks=true,
-linkcolor=blue,
-urlcolor=blue
-}
+\documentclass{article}
+\usepackage{amsmath, amssymb, graphicx}
+\title{Bessel Functions, Their Zeros, and Applications in Cylindrical Geometries}
+\author{Enrique Rivera, Christine Kim \\ University of Texas at Austin}
+\date{\today}
 
 \begin{document}
-\title{Title Name Here}
-% [] is for ORCiD
-\correspondingauthor{Main Author}
-\email{author1@email.com, author2@email.com, author3@email.com}
-\author[0000-0000-0000-0000]{Author Name 1}
-\affiliation{Affiliation Name 1\\
-Affiliation Address Line 1\\
-Affiliation Address Line 2}
+\maketitle
 
-\author[0000-0000-0000-0000]{Author Name 2}
-\affiliation{Affiliation Name 2\\
-Affiliation Address Line 1\\
-Affiliation Address Line 2}
-
-\collaboration{6}{(Collaboration Name)}
-% or 
-% \nocollaboration{0}
-
-\author[0000-0000-0000-0000]{Author Name 3}
-\author[0000-0000-0000-0000]{Author Name 4}
-\author[0000-0000-0000-0000]{Author Name 5}
-
-% 250 word limit for abstract
 \begin{abstract}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus consequat tristique velit sollicitudin egestas. Fusce nec ex out neque gravida facilisis laoreet ac dui. Suspendisse vel feugiat orci. Nulla pharetra nec lacus non sollicitudin. Donec in suscipit orci, et interdum tellus. Vestibulum mollis risus in metus venenatis, quis vestibulum nisi cursus. Proin lacinia hendrerit elit a luctus. Nulla facilisi. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse sed lectus accumsan, dignissim metus non, bibendum tellus.
-Pellentesque interdum purus ut augue euismod imperdiet. Vestibulum tortor ex, consectetur at condimentum at, finibus nec lacus. Quisque eu vehicula lorem, pretium blandit odio. Nullam sodales efficitur purus at efficitur. Donec ornare, libero quis eleifend eleifend, metus ex aliquet magna, at rhoncus ipsum tellus vel velit. Mauris quis elit viverra metus tristique ullamcorper blandit at metus. Integer porta malesuada mauris vitae porttitor. Nunc erat dui, molestie id dui id, varius tempus augue. Morbi vel augue eu quam auctor aliquam. Proin efficitur ipsum ut arcu placerat consequat. In eget tortor vitae magna suscipit efficitur vitae ac massa. Suspendisse potenti.
+In this paper, we present numerical computations of the Bessel functions 
+$J_n(x)$ for $n=0, 1, 2$ and identify their first five positive roots. Using 
+Python's \texttt{scipy} library, we accurately bracket each zero and discuss 
+why these roots are key to solving boundary-value problems in cylindrical 
+coordinates. We also highlight three physical applications: the vibrational 
+modes of a circular drumhead, wave propagation in cylindrical waveguides, 
+and heat conduction in cylindrical rods.
 \end{abstract}
 
-% Use astrothesaurus numbers in place of num
-\keywords{keyword 1 (num) --- keyword 2 (num) --- keyword 3 (num)}
+\keywords{Bessel functions --- root finding --- cylindrical coordinates --- boundary-value problems}
+
 \section{Introduction} \label{sec:intro}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras sed felis ante. Nam interdum, nisl ut euismod iaculis, sem mi condimentum nisl, et viverra ex dui mattis neque. Donec semper tortor ut laoreet maximus. Aliquam auctor hendrerit justo quis congue. Etiam eu euismod urna. Donec sapien lectus, rhoncus ac vestibulum euismod, posuere id ex. Etiam rhoncus tempus ultricies.
 
-Fusce pellentesque vestibulum massa, sed volutpat leo pharetra in. Integer id blandit arcu. Aliquam blandit, tellus a ultrices viverra, nibh ligula mattis massa, eu auctor nisl neque ut velit. Donec venenatis euismod dolor. Morbi euismod lectus eget risus ornare, at ultricies mi eleifend. Maecenas aliquam varius risus sit amet posuere. Suspendisse at lacus consectetur, semper dui vitae, dapibus massa. Nunc lobortis metus tincidunt lorem eleifend facilisis. Nulla sodales et orci id molestie. Sed dignissim quam vitae sagittis efficitur. Sed pellentesque tellus ut suscipit congue. Sed commodo neque in ipsum vestibulum, at viverra urna ornare. Duis sollicitudin ipsum purus, eget facilisis diam scelerisque at. In sed consequat lectus, sodales finibus magna.
+Bessel functions $J_n(x)$ arise as solutions to the Bessel differential equation:
+\begin{equation}
+x^2 \frac{d^2 y}{dx^2} + x \frac{dy}{dx} + \bigl(x^2 - n^2\bigr) y = 0,
+\end{equation}
+where $n$ is a nonnegative integer. These functions are critically important 
+for solving partial differential equations (PDEs) in cylindrical or spherical 
+geometries, as they appear in problems related to wave propagation, heat 
+diffusion, and vibrations of circular membranes 
+\citep{Boas2006,Arfken2013}. 
+We rely on standard reference tables \citep{Olver2010} to verify the zeros.
 
-Nulla malesuada porttitor nisl, eu consequat ex finibus vitae. Pellentesque id sem eu leo cursus porttitor efficitur sit amet orci. In aliquam lorem consectetur luctus consectetur. Aliquam a lacus lacinia, fermentum augue in, blandit ante. Donec hendrerit est ac mauris volutpat, id congue quam imperdiet. Maecenas eu lacinia dolor. Mauris luctus semper tincidunt. Morbi quis nibh eu dolor consequat pellentesque.
+In this work, we focus on computing and plotting $J_0(x)$, $J_1(x)$, and 
+$J_2(x)$ for $0 \le x \le 20$, and numerically finding the first five positive 
+roots for each function. These roots often represent the ``allowed'' modes 
+in systems with cylindrical boundary conditions. The remainder of this paper 
+is structured as follows: Section~\ref{sec:methods} describes our numerical 
+approach, Section~\ref{sec:results} presents the results (plots and roots), 
+and Section~\ref{sec:conclusion} concludes with possible future directions.
 
-Etiam ut dictum orci. Mauris augue nibh, aliquam id ipsum vitae, mattis tincidunt dui. In hac habitasse platea dictumst. Etiam tempor tortor et magna ornare, nec volutpat dolor vestibulum. Morbi non condimentum lorem, in rutrum odio. Aenean luctus rutrum fermentum. Duis ac elit efficitur, ultricies arcu vel, sodales sapien. Sed malesuada nibh sed varius maximus. Phasellus in ipsum vestibulum, condimentum enim sit amet, hendrerit mauris. Aenean ac risus eleifend, pulvinar justo commodo.
+\section{Numerical Methods} \label{sec:methods}
 
-\section{Data} \label{sec:data}
-Aenean rhoncus cursus massa eu porta. Quisque magna libero, vehicula blandit lorem in, pellentesque rutrum urna. Morbi tincidunt a enim nec egestas. Aliquam interdum diam eu felis consectetur, non tempor ipsum mattis. Phasellus in leo porttitor ex congue pulvinar. Mauris velit metus, pharetra ut facilisis id, auctor in ligula. Nunc erat lacus, vehicula eget lacus nec, ornare viverra ligula. In id fringilla nibh. Mauris eget bibendum eros, vel ultrices nisi. Suspendisse enim dolor, iaculis ullamcorper tempus eu, aliquam sed erat. Duis nec nibh vitae quam vestibulum ultrices. Duis sed sollicitudin mi, nec sagittis dolor. Quisque quis pellentesque lectus. Suspendisse sapien enim, tristique vitae sagittis non, mattis vel ligula. Curabitur at scelerisque sapien. Aliquam porta ipsum ac lectus viverra feugiat.
+We used Python 3 with \texttt{NumPy} and \texttt{SciPy} to evaluate Bessel 
+functions and to locate zeros. Specifically:
+\begin{enumerate}
+    \item We generated a dense grid of $x$ values in the range $[0, 50]$.
+    \item We evaluated $J_n(x)$ on this grid using the function 
+          \texttt{scipy.special.jn(n, x)}.
+    \item We identified sign changes (from positive to negative or vice versa) 
+          between consecutive grid points. Each sign change indicated an 
+          approximate bracketing interval containing a root.
+    \item We refined each bracketing interval via the Brent root-finding method 
+          (\texttt{scipy.optimize.brentq}).
+\end{enumerate}
 
-% Example list
-\begin{itemize}
- \item{Item 1}
-   \begin{enumerate}
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet.
-    \end{enumerate}
-  \item{Item 2}
-    \begin{enumerate}
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet
-    \end{enumerate}
-  \item{Item 3}
-    \begin{enumerate}
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet
-      \item Lorem ipsum dolor sit amet
-    \end{enumerate}
-\end{itemize}
+We repeated this process for $n=0,1,2$ and recorded the first five positive 
+roots found for each function. The resulting Python code (omitted here for 
+brevity) leverages a simple bracket‐search over intervals where $J_n(x)$ 
+changes sign. 
 
-Mauris placerat sagittis sapien, in consectetur tellus tristique quis. Phasellus in magna eu nibh lobortis auctor. Nunc non aliquet massa. Phasellus suscipit urna sit amet libero sodales pulvinar in ut metus. Sed vestibulum eleifend consequat. Donec commodo luctus ex, sed fermentum ex accumsan in.
+\section{Results and Discussion} \label{sec:results}
 
-\section{Information about Observations}
-Phasellus tincidunt ligula nisl, in cursus odio mattis cursus. Aenean vitae neque purus. Morbi ac nisi quis est consequat euismod. Aenean tincidunt aliquet velit, a semper est aliquet sed. Aenean nunc lorem, vulputate vitae vulputate et, tincidunt a leo. Morbi urna purus, rhoncus id erat vel, ullamcorper sollicitudin velit. Donec eros elit, vulputate eu hendrerit vel, tincidunt non mi. Nullam eu lectus sodales, lobortis purus vel, egestas orci. Nam aliquam convallis est at bibendum.
+\subsection{Plots of \texorpdfstring{$J_n(x)$}{Jn(x)}}
 
-\subsection{Specific Topic Pt 1} \label{sec:subtopic1}
-Fusce pellentesque vestibulum massa, sed volutpat leo pharetra in. Integer id blandit arcu. Aliquam blandit, tellus a ultrices viverra, nibh ligula mattis massa, eu auctor nisl neque ut velit. Donec venenatis euismod dolor. Morbi euismod lectus eget risus ornare, at ultricies mi eleifend. Maecenas aliquam varius risus sit amet posuere. Suspendisse at lacus consectetur, semper dui vitae, dapibus massa. Nunc lobortis metus tincidunt lorem eleifend facilisis. Nulla sodales et orci id molestie. Sed dignissim quam vitae sagittis efficitur. Sed pellentesque tellus ut suscipit congue. Sed commodo neque in ipsum vestibulum, at viverra urna ornare. Duis sollicitudin ipsum purus, eget facilisis diam scelerisque at. In sed consequat lectus, sodales finibus magna
+Figure~\ref{fig:bessel_plot} shows the plots of $J_0(x)$, $J_1(x)$, and $J_2(x)$ 
+for $0 \le x \le 20$. As expected, $J_0(x)$ starts at 1 at $x=0$, whereas 
+$J_1(0) = 0$ and $J_2(0) = 0$. Each function oscillates and gradually decays 
+in amplitude as $x$ increases.
 
-
-\subsection{Specific Topic Pt 2} \label{sec:subtopic2}
-Fusce pellentesque vestibulum massa, sed volutpat leo pharetra in. Integer id blandit arcu. Aliquam blandit, tellus a ultrices viverra, nibh ligula mattis massa, eu auctor nisl neque ut velit. Donec venenatis euismod dolor. Morbi euismod lectus eget risus ornare, at ultricies mi eleifend. Maecenas aliquam varius risus sit amet posuere. Suspendisse at lacus consectetur, semper dui vitae, dapibus massa. Nunc lobortis metus tincidunt lorem eleifend facilisis. Nulla sodales et orci id molestie. Sed dignissim quam vitae sagittis efficitur. Sed pellentesque tellus ut suscipit congue. Sed commodo neque in ipsum vestibulum, at viverra urna ornare. Duis sollicitudin ipsum purus, eget facilisis diam scelerisque at. In sed consequat lectus, sodales finibus magna
-
-\begin{figure}[H]
-    \centering
-    \includegraphics{orcid-ID.png}
-    \caption{Example Figure}
-    \label{fig:my_label}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.9\linewidth]{img/bessel_plot.png} 
+\caption{Plot of $J_0(x), J_1(x),$ and $J_2(x)$ over the range $0 \le x \le 20$. 
+A horizontal line at $y=0$ is included to help identify zero crossings.}
+\label{fig:bessel_plot}
 \end{figure}
 
-Fusce pellentesque vestibulum massa, sed volutpat leo pharetra in. Integer id blandit arcu. Aliquam blandit, tellus a ultrices viverra, nibh ligula mattis massa, eu auctor nisl neque ut velit. Donec venenatis euismod dolor. Morbi euismod lectus eget risus ornare, at ultricies mi eleifend. Maecenas aliquam varius risus sit amet posuere. Suspendisse at lacus consectetur, semper dui vitae, dapibus massa. Nunc lobortis metus tincidunt lorem eleifend facilisis. Nulla sodales et orci id molestie. Sed dignissim quam vitae sagittis efficitur. Sed pellentesque tellus ut suscipit congue. Sed commodo neque in ipsum vestibulum, at viverra urna ornare. Duis sollicitudin ipsum purus, eget facilisis diam scelerisque at. In sed consequat lectus, sodales finibus magna
+\subsection{First Five Positive Roots}
 
-\subsection{Specific Topic Pt 3} \label{sec:subtopic3}
-Fusce pellentesque vestibulum massa, sed volutpat leo pharetra in. Integer id blandit arcu. Aliquam blandit, tellus a ultrices viverra, nibh ligula mattis massa, eu auctor nisl neque ut velit. Donec venenatis euismod dolor. Morbi euismod lectus eget risus ornare, at ultricies mi eleifend. Maecenas aliquam varius risus sit amet posuere. Suspendisse at lacus consectetur, semper dui vitae, dapibus massa. Nunc lobortis metus tincidunt lorem eleifend facilisis. Nulla sodales et orci id molestie. Sed dignissim quam vitae sagittis efficitur. Sed pellentesque tellus ut suscipit congue. Sed commodo neque in ipsum vestibulum, at viverra urna ornare. Duis sollicitudin ipsum purus, eget facilisis diam scelerisque at. In sed consequat lectus, sodales finibus magna
+Table~\ref{tab:roots} lists the first five positive roots of $J_0(x)$, $J_1(x)$, 
+and $J_2(x)$. These values match well with tabulated references 
+\citep{Olver2010}. The smallest root for $J_0$ is approximately 2.4048, the 
+smallest for $J_1$ is about 3.8317, and the smallest for $J_2$ is roughly 5.1356.
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|c|c|}
-         \hline
-         Name &  Value \\
-         \hline
-         A & 104 \\
-         B & 684 \\
-         C & 1480 \\
-         D & 803 \\
-         E & 800 \\
-         F & 1421 \\
-         \hline
-    \end{tabular}
-    \caption{Data}
-    \label{tab:data_tab}
+\begin{table}[ht]
+\centering
+\caption{First five positive roots of $J_0(x)$, $J_1(x)$, and $J_2(x)$.}
+\label{tab:roots}
+\begin{tabular}{c c c c c c}
+\hline\hline
+$n$ & Root 1 & Root 2 & Root 3 & Root 4 & Root 5 \\
+\hline
+0 & 2.4048 & 5.5201 & 8.6537 & 11.7915 & 14.9309 \\
+1 & 3.8317 & 7.0156 & 10.1735 & 13.3237 & 16.4706 \\
+2 & 5.1356 & 8.4172 & 11.6198 & 14.7959 & 17.9598 \\
+\hline
+\end{tabular}
 \end{table}
 
-Fusce pellentesque vestibulum massa, sed volutpat leo pharetra in. Integer id blandit arcu. Aliquam blandit, tellus a ultrices viverra, nibh ligula mattis massa, eu auctor nisl neque ut velit. Donec venenatis euismod dolor. Morbi euismod lectus eget risus ornare, at ultricies mi eleifend. Maecenas aliquam varius risus sit amet posuere. Suspendisse at lacus consectetur, semper dui vitae, dapibus massa. Nunc lobortis metus tincidunt lorem eleifend facilisis. Nulla sodales et orci id molestie. Sed dignissim quam vitae sagittis efficitur. Sed pellentesque tellus ut suscipit congue. Sed commodo neque in ipsum vestibulum, at viverra urna ornare. Duis sollicitudin ipsum purus, eget facilisis diam scelerisque at. In sed consequat lectus, sodales finibus magna
+\subsection{Physical Applications}
 
+Bessel functions and their zeros appear in various physical contexts:
 
-\section{Results} \label{sec:results}
-Quisque aliquam dignissim leo vitae efficitur. In at ex est. Praesent lobortis posuere nulla et aliquet. Donec augue arcu, finibus at auctor id, blandit vitae odio. Vestibulum ut nunc et est tempus egestas non sed augue. Donec fringilla tellus quis volutpat rhoncus. Pellentesque varius magna sed metus hendrerit maximus. Duis at ipsum sem. Aenean et porttitor tortor. Praesent quis sem ullamcorper orci interdum semper in ut lacus. Praesent varius sem eget sem semper, ut venenatis sem mattis.
+\subsubsection{Circular Drumhead Modes}
 
-Duis ac urna sollicitudin, malesuada lorem eu, molestie quam. Curabitur quis lectus sollicitudin, tincidunt eros a, dapibus nisl. In ligula elit, laoreet ac suscipit in, pretium non dolor. Ut pretium ultricies felis, ac vehicula nisi luctus id. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Aliquam erat volutpat. Nullam id mauris lectus. Fusce blandit mauris non quam posuere imperdiet. Curabitur consectetur sit amet sapien vitae condimentum. Donec pharetra risus lectus, ac malesuada dolor luctus nec. Maecenas vel fermentum nisl. Mauris id nisi quis ipsum ultrices eleifend quis at sapien. Nulla a porttitor quam. Phasellus sit amet magna magna.
+In a circular membrane of radius $R$, the radial part of the solution to the 
+2D wave equation is often proportional to
+\begin{equation}
+y(r, \theta, t) \;=\; J_n\!\Bigl(\alpha_{n,k}\,\tfrac{r}{R}\Bigr)\,\cos(n\theta)\,\cos(\omega_{n,k}t),
+\end{equation}
+with boundary conditions requiring $y(R,\theta,t)=0$. Thus, we must have 
+$J_n(\alpha_{n,k})=0$. Each zero $\alpha_{n,k}$ corresponds to a vibrational 
+mode of the membrane; $\omega_{n,k}$ depends on $\alpha_{n,k}$ via the wave 
+equation's dispersion relation.
 
-\section{Summary /  Conclusion} \label{sec:summary}
-Donec lobortis commodo lectus bibendum imperdiet. Maecenas non porttitor leo. Suspendisse lacus risus, facilisis ut sapien sit amet, pretium rhoncus arcu. Proin vitae risus at ligula vehicula pretium at vel velit. Vivamus quis quam auctor enim accumsan sagittis ac eu est. Proin porttitor odio vitae odio dictum, nec sodales nisl rutrum. In eu nunc tincidunt, vestibulum magna vel, pretium nibh. Vestibulum massa augue, pharetra a ipsum quis, accumsan imperdiet nibh. Pellentesque maximus sed velit at convallis. Pellentesque sapien libero, dictum nec magna vitae, convallis volutpat lacus. Mauris gravida metus mauris, quis malesuada ipsum molestie non. Vestibulum quis enim auctor libero cursus porta et facilisis quam.
+\subsubsection{Waveguides in Cylinders}
 
-Sed gravida justo non vehicula commodo. Ut ut tortor a arcu maximus vestibulum quis id est. Donec elementum magna vel sem pellentesque cursus. Curabitur sollicitudin dui a congue cursus. In accumsan non orci non venenatis. Nullam luctus accumsan facilisis. Integer nec gravida justo. Nunc varius tortor imperdiet, semper justo eu, molestie ex. Phasellus at lorem turpis. Aliquam nec pretium purus, in tincidunt turpis. Vestibulum tristique dolor eget suscipit sollicitudin. Morbi nec maximus lacus, vitae vehicula velit. Sed fringilla sapien ac diam consectetur sagittis.
+Electromagnetic modes in a perfectly conducting cylindrical waveguide reduce 
+to Bessel equations in the radial direction, with boundary conditions 
+(due to conductor walls) that force
+\begin{equation}
+J_n(\alpha_{n,k}) \;=\; 0.
+\end{equation}
+Here, $\alpha_{n,k}$ sets the cutoff frequencies of the guide, so again, 
+the first few zeros determine the fundamental and higher modes.
 
-\subsubsection{References}
-References can be added from BibTex support using {\tt\string\cite} command\\
-\cite{textbook}
-\cite{latex:companion}
-\cite{lesk:1977}
+\subsubsection{Heat Conduction in Cylinders}
 
-\newpage
-\bibliographystyle{aasjournal}
-\bibliography{refs}
+For transient heat conduction in a cylindrical rod (of radius $R$) with 
+certain side boundary conditions held at constant temperature, separation 
+of variables leads to solutions of the form
+\begin{equation}
+T(r,t) \;=\; J_n\!\Bigl(\beta_{n,k}\,\tfrac{r}{R}\Bigr)\,e^{-\,\kappa\,(\beta_{n,k}^2)\,t},
+\end{equation}
+where $\beta_{n,k}$ must be a zero of $J_n$ to satisfy $T(R,t)=0$ at the 
+boundary. The smallest zero sets the slowest decaying mode, while higher 
+zeros represent more rapidly decaying modes.
+
+In all these scenarios, the **first** zero often sets the fundamental mode 
+(lowest frequency or slowest decaying mode), whereas higher zeros correspond 
+to higher harmonic modes.
+
+\section{Conclusions and Future Work} \label{sec:conclusion}
+
+We have demonstrated how to compute Bessel functions $J_0, J_1,$ and $J_2$ 
+numerically on a finite interval, and we located their first five positive 
+roots using a bracket-search method and \texttt{brentq}. The numerical 
+results match known tabulated zeros to at least four or five decimal places 
+\citep{Boas2006,Arfken2013,Olver2010}.
+
+In future work, we could:
+\begin{itemize}
+\item Compute zeros of higher-order Bessel functions (e.g., $J_3, J_4, \dots$).
+\item Investigate Neumann functions $Y_n(x)$ or Hankel functions $H^{(1)}_n(x)$.
+\item Explore 2D PDE solutions with both radial and angular dependence, 
+      combining the $J_n$ behavior with $\cos(n\theta)$ or $\sin(n\theta)$ terms.
+\end{itemize}
+
+\acknowledgments
+We thank our teaching assistants and classmates for helpful feedback and 
+the references and materials provided by our course.
+
+\begin{thebibliography}{}
+
+\bibitem[Arfken(2013)]{Arfken2013} 
+  Arfken, G.\ B., Weber, H.\ J., \& Harris, F.\ E.\ 2013, 
+  Mathematical Methods for Physicists, 7th ed.\ (Academic Press)
+
+\bibitem[Boas(2006)]{Boas2006} 
+  Boas, M.\ L.\ 2006, Mathematical Methods in the Physical Sciences, 3rd ed.\ 
+  (Wiley)
+
+\bibitem[Olver et al.(2010)]{Olver2010}
+  Olver, F.\ W.\ J., Lozier, D.\ W., Boisvert, R.\ F.\, \& Clark, C.\ W.\ 2010, 
+  NIST Handbook of Mathematical Functions (Cambridge Univ.\ Press)
+
+\end{thebibliography}
 
 \end{document}
