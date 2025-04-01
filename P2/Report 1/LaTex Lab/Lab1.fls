@@ -37,6 +37,9 @@ INPUT /Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex
 INPUT /Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/latex/graphics-def/pdftex.def
 INPUT /Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l3backend-dev/l3backend-pdftex.def
 INPUT /Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l3backend-dev/l3backend-pdftex.def
+INPUT ./Lab1.aux
+INPUT ./Lab1.aux
+INPUT Lab1.aux
 OUTPUT Lab1.aux
 INPUT /Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/context/base/mkii/supp-pdf.mkii
 INPUT /Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/context/base/mkii/supp-pdf.mkii
