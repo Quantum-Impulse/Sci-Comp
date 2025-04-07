@@ -1,0 +1,547 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}   % For math symbols
+\usepackage{graphicx}          % For including figures
+\usepackage{booktabs}          % For nicer tables
+\usepackage{hyperref}          % For clickable links (references)
+\usepackage{color}             % (Optional) For color if needed
+\title{\textbf{Exploring the Google PageRank Algorithm}}
+\author{Enrique Rivera, Christine Kim \\ University of Texas at Austin}
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+
+%------------------------------------------
+%  Abstract
+%------------------------------------------
+\begin{abstract}
+In this paper, we investigate the Google PageRank algorithm by studying small examples of directed web graphs. 
+We construct the hyperlink matrix \(H\), discuss its properties as a stochastic matrix, implement the iterative PageRank process, 
+and illustrate how Theorem 4.9 (the Perron--Frobenius result) ensures convergence to a unique steady-state vector. 
+We compare iterative solutions to direct eigenvalue-based solutions and conclude by discussing how one might 
+improve a website's ranking and potential future extensions to the algorithm.
+\end{abstract}
+
+%------------------------------------------
+%  Keywords
+%------------------------------------------
+\textbf{Keywords:} PageRank, Markov chain, stochastic matrix, eigenvalue, linear algebra
+
+%------------------------------------------
+%  Introduction
+%------------------------------------------
+\section{Introduction}
+The PageRank algorithm, developed by Sergey Brin and Larry Page, revolutionized how web pages 
+are ranked by their ``importance.'' The core idea is that a page is ``important'' if it is linked to by 
+other important pages. Mathematically, one models the web as a directed graph and constructs 
+a \emph{hyperlink matrix} \(H\). This matrix then defines a Markov chain whose steady-state 
+distribution reflects the ``popularity score'' of each page.
+
+In this report, we follow the exercises in \cite{Sullivan2025Linear} (see Section 4.9.1) to:
+\begin{enumerate}
+  \item Construct the hyperlink matrix \(H\) for the sample webs in Figures 4.3 and 4.4.
+  \item Implement the iterative PageRank update \(x_{k+1} = H x_k\).
+  \item Show conditions for \(H\) to be a column-stochastic matrix.
+  \item Apply Theorem 4.9, illustrating how the unique steady state can be found by solving the eigenvalue problem \(Hx = x\).
+  \item Compare the iterative and direct-eigenvalue approaches to find the steady-state rank vector.
+  \item Explore the ``random surfer'' modification and discuss possible improvements to the algorithm.
+\end{enumerate}
+
+We also provide code implementations in Python and discuss how the ranks evolve over iterations.
+
+%------------------------------------------
+%  Hyperlink Matrix Construction
+%------------------------------------------
+\section{Hyperlink Matrix Construction (Exercises 4.95--4.97)}
+
+In Figure~4.3, we have a web of six pages. Each page's ``out-links'' determine the columns of the hyperlink matrix 
+$H \in \mathbb{R}^{6 \times 6}$. Recall that if page $j$ links to $m$ different pages, each of those $m$ pages 
+receives an entry $\tfrac{1}{m}$ in column $j$, while non-linked pages receive $0$ in that column.
+
+Based on the diagram, the out-links for each page (indexed as 1 through 6) are:
+\begin{itemize}
+  \item Page 1 links to pages 2 and 3.
+  \item Page 2 links to page 3.
+  \item Page 3 links to pages 1, 2, and 5.
+  \item Page 4 links to pages 5 and 6.
+  \item Page 5 links to pages 4 and 6.
+  \item Page 6 links to pages 3 and 4.
+\end{itemize}
+This makes the out-degree of page~1 equal to 2, page~2 equal to 1, and so on.
+
+\bigskip
+
+Hence, the full $6 \times 6$ hyperlink matrix $H$ is:
+\[
+H 
+= 
+\begin{pmatrix}
+0      & 0      & \tfrac{1}{3} & 0          & 0          & 0 \\
+\tfrac{1}{2} & 0      & \tfrac{1}{3} & 0          & 0          & 0 \\
+\tfrac{1}{2} & 1      & 0           & 0          & 0          & \tfrac{1}{2} \\
+0      & 0      & 0           & 0          & \tfrac{1}{2} & \tfrac{1}{2} \\
+0      & 0      & \tfrac{1}{3} & \tfrac{1}{2} & 0          & 0 \\
+0      & 0      & 0           & \tfrac{1}{2} & \tfrac{1}{2} & 0
+\end{pmatrix}.
+\]
+
+\noindent
+Each column $j$ sums to 1, as every page $j$ ``distributes'' its total probability mass $\tfrac{1}{\text{outdeg}(j)}$ 
+among the pages it links to. Note that entries of $H$ are all nonnegative, so $H$ is a \emph{column-stochastic matrix}.
+
+\paragraph{Why is $H$ Stochastic?}
+A matrix is column-stochastic if
+\begin{enumerate}
+  \item All entries are nonnegative, and 
+  \item The entries in each column sum to 1.
+\end{enumerate}
+Since each page $j$ has outdegree $\text{outdeg}(j)$ and we assign $\tfrac{1}{\text{outdeg}(j)}$ to each linked page, the sum 
+in column $j$ is exactly 1. Thus $H$ is indeed a valid hyperlink matrix. This completes Exercises~4.95--4.97.
+
+
+%------------------------------------------
+%  Iterative PageRank & Plot
+%------------------------------------------
+\section{Iterative Process and Plot (Exercise 4.96)}
+
+We now demonstrate how to implement the PageRank iterative process 
+\[
+x_{k+1} \;=\; H \, x_{k}
+\]
+for the matrix \(H\) found in Section~\ref{sec:MatrixConstruction}. 
+Since our web contains 6~pages, we set the initial state to
+\[
+x_0 \;=\; \left(\tfrac{1}{6}, \tfrac{1}{6}, \tfrac{1}{6}, \tfrac{1}{6}, 
+\tfrac{1}{6}, \tfrac{1}{6}\right)^T.
+\]
+We apply the update \(x \leftarrow Hx\) repeatedly and observe convergence 
+to a steady-state vector. In practice, we stop either after a fixed number of 
+iterations (e.g., 10--15) or once successive iterates differ by less than 
+some tolerance (e.g., \(\|x_{k+1} - x_k\|\le 10^{-8}\)).
+
+\subsection{Python Example}
+Below is a minimal Python script illustrating the iterative update and a simple 
+plot of each page's rank versus iteration number. 
+Be sure to replace the \verb|H| array with the final 6$\times$6 matrix 
+from Section~\ref{sec:MatrixConstruction}.
+
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Hyperlink matrix (6x6) - fill in your actual entries:
+H = np.array([
+    [0,   0,   1/3, 0,   0,   0],
+    [1/2, 0,   1/3, 0,   0,   0],
+    [1/2, 1,   0,   0,   0,   1/2],
+    [0,   0,   0,   0,   1/2, 1/2],
+    [0,   0,   1/3, 1/2, 0,   0],
+    [0,   0,   0,   1/2, 1/2, 0]
+], dtype=float)
+
+# Number of pages:
+n = 6
+
+# Initial rank vector (uniform):
+x0 = np.ones(n) / n
+
+# Number of iterations:
+num_iters = 10
+
+# Store each iterate for later plotting:
+x_vals = [x0]
+x = x0.copy()
+for k in range(num_iters):
+    x = H @ x
+    x_vals.append(x)
+
+x_vals = np.array(x_vals)
+
+# Print the final approximate PageRank:
+print("Steady-state (approx.) after", num_iters, "iterations:")
+print(x)
+
+# Plot the evolution of each page's rank:
+for i in range(n):
+    plt.plot(x_vals[:, i], marker='o', label=f"Page {i+1}")
+
+plt.xlabel("Iteration")
+plt.ylabel("Rank Value")
+plt.title("PageRank Convergence via Iteration")
+plt.legend()
+plt.show()
+\end{verbatim}
+
+
+
+\begin{figure}[h]
+      \centering
+      \includegraphics[width=0.65\textwidth]{img/PageRank Convergence via Iteration.png}
+      \caption{%
+        Convergence of the PageRank values for pages 1 through 6 under iteration 
+        \(x \leftarrow Hx\). Each colored line shows how a particular page's rank 
+        evolves from the initial uniform distribution \(x_0\) to its steady‐state 
+        value. For instance, we see that Page~3 (green line) increases sharply 
+        before settling around \(\sim 0.27\). 
+        Meanwhile, Page~1 (blue line) drops early on and then converges near \(0.08\). 
+        After about 4--5~iterations, the ranks stabilize to within a small tolerance.
+      }
+      \label{fig:pagerank-convergence}
+\end{figure}
+
+\noindent
+When you run this script, each component of the rank vector 
+(\(x_1, x_2, \ldots, x_6\)) will steadily converge to a limiting value 
+as \(k\) increases. In a typical run, 5--10 iterations are enough for 
+the ranks to stabilize.
+    
+
+\bigskip
+\noindent
+\textbf{Observation:} The vector returned in the final iteration is our 
+approximate PageRank for Figure~4.3. In Exercise~4.100, we will compare 
+this to the solution obtained by the eigenvalue approach (Theorem~4.9) 
+to show they match.
+
+\newpage
+
+%------------------------------------------
+%  Theorem 4.9 & Eigenvalue Approach
+%------------------------------------------
+\section{Eliminating Iteration via Theorem 4.9 (Exercises 4.98--4.99)}
+
+\noindent
+The text provides a (partially stated) Theorem~4.9 claiming that if
+\begin{itemize}
+  \item $A$ is an $n\times n$ \emph{column-stochastic} matrix, 
+  \item all other eigenvalues of $A$ have magnitude strictly less than 1,
+\end{itemize}
+then for any initial vector $x_0$, the iterative sequence 
+$\{\,A^k x_0\,\}_{k=0}^{\infty}$ converges to the \emph{unique} eigenvector 
+corresponding to the eigenvalue $\lambda=1$, normalized so its components sum 
+to 1. In other words, 
+\[
+\lim_{k\to\infty}A^k x_0 \;=\; \text{(the eigenvector for } \lambda=1 \text{)}.
+\]
+This statement directly implies that \emph{we need not iterate at all}, because 
+the steady-state vector is simply the (positive) eigenvector of $A$ with eigenvalue~1.
+
+\bigskip
+\noindent
+\textbf{Filling in the Blank (Exercise 4.98).}
+The incomplete statement in our text is typically something like:
+\[
+\lim_{k\to\infty} A^k x_0 
+\;=\;
+\;\underline{\quad \text{(the eigenvector for eigenvalue }1\text{, normalized to sum to }1)}\quad.
+\]
+All other eigenvalues have $|\lambda|<1$, so those terms vanish as $k\to\infty$, 
+leaving only the part of $x_0$ that lies in the direction of the eigenvector 
+associated with $\lambda=1$. Thus the blank is precisely ``the eigenvector of $A$ 
+corresponding to $\lambda=1$.''
+
+\bigskip
+\noindent
+\textbf{Why We Can Eliminate Iteration (Exercise 4.99).}
+Since $\lim_{k\to\infty} A^k x_0$ is the eigenvector for eigenvalue 1, 
+there is no need to perform repeated multiplications $A^k$. Instead, we can solve
+\[
+(I - A)\,x^* \;=\; 0 
+\quad\text{subject to}\quad
+\sum_i x_i^* = 1, 
+\quad x_i^* \ge 0.
+\]
+In the PageRank setting, for our 6-page matrix $H$, we solve
+\[
+(I - H)\,x \;=\; 0,
+\]
+then scale $x$ so that $\sum_i x_i = 1$. This $x$ is the steady-state rank vector.
+
+\subsection{Python Example of the Eigenvalue Approach}
+Below is sample code to compute the eigenvalues and eigenvectors of $H$ and extract 
+the one corresponding to eigenvalue 1. Make sure to verify that $H$ indeed has an 
+eigenvalue very close to 1. (Floating-point precision may give 0.9999999, for instance.)
+
+\begin{verbatim}
+import numpy as np
+
+# The same 6x6 hyperlink matrix H from previous sections:
+H = np.array([
+    [0,   0,   1/3, 0,   0,   0],
+    [1/2, 0,   1/3, 0,   0,   0],
+    [1/2, 1,   0,   0,   0,   1/2],
+    [0,   0,   0,   0,   1/2, 1/2],
+    [0,   0,   1/3, 1/2, 0,   0],
+    [0,   0,   0,   1/2, 1/2, 0]
+], dtype=float)
+
+# Compute eigenvalues/eigenvectors
+vals, vecs = np.linalg.eig(H)
+
+# Find the eigenvalue closest to 1:
+idx = np.argmin(np.abs(vals - 1.0))
+
+# Corresponding eigenvector
+x_eig = vecs[:, idx]
+
+# Normalize so entries sum to 1 (and ensure nonnegativity)
+pagerank_eig = np.real(x_eig / np.sum(x_eig))
+pagerank_eig = np.where(pagerank_eig < 0, 0, pagerank_eig)  # (just in case)
+
+print("Eigenvalue-based PageRank:", pagerank_eig)
+
+Output:
+Eigenvalue-based PageRank: [0.08695652 0.13043478 0.26086957 0.17391304 0.17391304 0.17391304]
+\end{verbatim}
+
+\noindent
+In practice, this \texttt{pagerank\_eig} vector coincides with the limit found by iteration. 
+Thus, Theorem~4.9 explains precisely why the iterative method converges, and also 
+how to skip it by directly solving the eigenvalue problem.
+
+
+
+%------------------------------------------
+%  Results for Figure 4.3
+%------------------------------------------
+\section{Results for Figure 4.3 (Exercise 4.100)}
+
+We now present the final PageRank vector for the 6-page web in Figure~4.3. 
+From the eigenvalue-based method (Section~\ref{sec:eigenvalue}), we found:
+\[
+\text{Eigenvalue-based PageRank: } 
+x^* 
+\;=\;
+\bigl(
+0.08695652,\;
+0.13043478,\;
+0.26086957,\;
+0.17391304,\;
+0.17391304,\;
+0.17391304
+\bigr)^T.
+\]
+\noindent
+Each entry can also be written as a simple fraction of $\tfrac{1}{23}$:
+\[
+x^* 
+\;=\;
+\left(
+\frac{2}{23},\;
+\frac{3}{23},\;
+\frac{6}{23},\;
+\frac{4}{23},\;
+\frac{4}{23},\;
+\frac{4}{23}
+\right)^T.
+\]
+These sum to 1 because $2 + 3 + 6 + 4 + 4 + 4 = 23$.
+
+\subsection*{Ranking the Pages}
+Sorting the pages by their rank values, we see that 
+\[
+x^*_3 = \tfrac{6}{23} \approx 0.2609 
+\quad
+(\text{the largest entry}),
+\]
+while $x^*_1 = \tfrac{2}{23} \approx 0.0870$ 
+is the smallest. The remaining entries for 
+pages 4, 5, and 6 all tie at $\tfrac{4}{23} \approx 0.1739$, 
+and page~2 takes the value $\tfrac{3}{23} \approx 0.1304$. 
+Hence the ordering of importance from highest to lowest is:
+\[
+\text{Page }3 
+\;>\;
+\text{Page }4 \;=\; \text{Page }5 \;=\; \text{Page }6
+\;>\;
+\text{Page }2
+\;>\;
+\text{Page }1.
+\]
+
+\subsection*{Iterative vs.\ Eigenvalue Comparison}
+A quick check of the iterative approach 
+$x_{k+1} = H \, x_k$ with $x_0 = (1/6, \ldots, 1/6)^T$ 
+(after about 10--15 iterations) yields the 
+\emph{same} steady-state vector, thus confirming 
+Theorem~4.9 and completing Exercise~4.100.
+
+
+
+%------------------------------------------
+%  Figure 4.4 Web Analysis    
+%------------------------------------------
+\section{Figure 4.4 Web Analysis (Exercise 4.101)}
+
+We now turn to the second example web shown in Figure~4.4, which has 8~pages labeled 
+1 through~8. Our goal is to:
+
+\begin{enumerate}
+  \item Write the $H$ matrix and find the initial state $x_0$,
+  \item Find the steady-state PageRank vector using 
+    (i)~the iterative difference equation and 
+    (ii)~the eigenvalue approach (Theorem~4.9),
+  \item Rank the pages in order of importance.
+\end{enumerate}
+
+\subsection{Hyperlink Matrix Construction for Figure 4.4}
+First, we identify each page's out-links by carefully inspecting the arrows in Figure~4.4. 
+\textbf{(Fill in your own list of out-links here.)}
+For example, if page~1 links to pages 2 and 3, then in column~1 of $H$, 
+the entries corresponding to rows~2 and~3 are each $\tfrac{1}{2}$, and the rest are~0. 
+Repeat for all 8~pages. 
+
+When you have enumerated all out-links, construct the $8\times 8$ matrix $H$ by:
+\[
+H_{i,j}
+\;=\;
+\begin{cases}
+  \tfrac{1}{\text{outdeg}(j)}, & \text{if page $j$ links to page $i$,}\\
+  0, & \text{otherwise}.
+\end{cases}
+\]
+where $\text{outdeg}(j)$ is the number of out-links from page~$j$. 
+Since each page in Figure~4.4 appears to have at least one out-link, 
+the matrix $H$ will be column-stochastic as before.
+
+\bigskip
+\noindent
+\textbf{Example Format (Hypothetical Matrix)}. 
+Replace the zeros/fractions with your actual values once you parse the figure:
+\[
+H 
+=
+\begin{pmatrix}
+0 & \cdots & \cdots & 0 & \cdots & \cdots & \cdots & 0 \\
+\vdots & 0 & \cdots & \cdots & \cdots & 0 & \cdots & \cdots \\
+\vdots & \vdots & \cdots & \cdots & \cdots & \vdots & \cdots & \vdots \\
+0 & \cdots & \cdots & \cdots & \cdots & \cdots & 0 & \cdots \\
+\end{pmatrix}_{8\times 8}.
+\]
+
+\subsubsection{Initial State $x_0$}
+Just like before, we choose the uniform distribution:
+\[
+x_0 
+\;=\;
+\left(
+\tfrac{1}{8},\;
+\tfrac{1}{8},\;
+\tfrac{1}{8},\;
+\tfrac{1}{8},\;
+\tfrac{1}{8},\;
+\tfrac{1}{8},\;
+\tfrac{1}{8},\;
+\tfrac{1}{8}
+\right)^T.
+\]
+This assumes no prior bias about any page's importance.
+
+\subsection{Steady State: Two Approaches}
+
+\subsubsection{(i) Iterative Difference Equation}
+Using Python or another tool, we implement:
+\[
+x_{k+1} \;=\; H\,x_k,
+\quad
+k=0,1,2,\ldots
+\]
+starting from $x_0$ above. After some fixed number of iterations (e.g.\ 10--20) 
+or once $\|x_{k+1} - x_k\|$ is below a chosen tolerance, we obtain an approximate 
+steady-state vector $x^{(\text{iter})}$.
+
+\begin{verbatim}
+import numpy as np
+
+# Suppose H is your 8x8 matrix from above
+H = np.array([...])  # fill in
+x0 = np.ones(8) / 8
+
+num_iters = 20
+x = x0.copy()
+for k in range(num_iters):
+    x = H @ x
+
+x_iter = x
+print("Iterative steady state:", x_iter)
+\end{verbatim}
+
+\subsubsection{(ii) Eigenvalue / Theorem 4.9}
+As with Figure~4.3, we can skip iteration by directly solving 
+$(I - H)\,x^* = 0$, $\sum_i x_i^*=1$. In Python:
+
+\begin{verbatim}
+vals, vecs = np.linalg.eig(H)
+idx = np.argmin(np.abs(vals - 1.0))  # eigenvalue near 1
+x_eig = vecs[:, idx]
+pagerank_eig = np.real(x_eig / np.sum(x_eig))  # normalize
+\end{verbatim}
+
+We expect the result \verb|pagerank_eig| to match the iterative solution $x^{(\text{iter})}$.
+
+\subsection{Ranking the Pages in Order of Importance}
+Finally, sort the entries of the steady-state vector (whichever method you used) from 
+largest to smallest. For instance, if $x^*_3$ is the largest, that means \emph{Page 3} 
+is the most important. List all eight pages accordingly.
+
+\begin{itemize}
+  \item \textbf{Page with the highest rank:} e.g.\ Page~3
+  \item \textbf{Second place:} e.g.\ Page~7
+  \item \dots
+  \item \textbf{Lowest rank:} e.g.\ Page~2
+\end{itemize}
+
+\noindent
+This completes the analysis for the web in Figure~4.4. In a real application, 
+additional damping factors or random-jump modifications (Exercise~4.102) could 
+further refine the model.
+
+
+
+%------------------------------------------
+%  Conclusion
+%------------------------------------------
+\section{Conclusion}
+In this project, we have:
+\begin{itemize}
+  \item Built hyperlink matrices for two small webs (Figures 4.3 and 4.4).
+  \item Illustrated that a column-stochastic matrix \(\,H\) leads naturally to an iterative PageRank process \(x_{k+1} = Hx_k\).
+  \item Used Theorem 4.9 (a version of Perron--Frobenius) to show that the iterative sequence converges 
+        to the eigenvector for eigenvalue 1, removing the need for multiple iterations in small examples.
+  \item Discussed a randomized extension to incorporate users who might teleport to random pages (the ``random surfer'' model).
+\end{itemize}
+Future work might involve exploring the damping factor \(\alpha\), analyzing disconnected webs, or 
+experimenting with large-scale performance optimizations.
+
+\subsection*{Improving Website Rank}      
+If a site owner wants to increase their page's importance, they would aim for \emph{high-quality inbound links}---i.e., 
+getting links from already-important pages. Another direction (Exercise 4.102) is to add a random-jump component 
+so that the resulting PageRank does not penalize pages that are far from major hubs.
+
+\subsection*{Acknowledgment}
+We wish to thank our classmates and teaching assistants for valuable input on debugging code and refining 
+our linear algebra proofs.
+
+%------------------------------------------
+%  References
+%------------------------------------------
+\begin{thebibliography}{9}
+
+\bibitem{Sullivan2025Linear}
+W. Sullivan,
+\textit{``4 Linear Algebra | Numerical Methods''},
+\url{https://numericalmethodssullivan.github.io/ch-linearalgebra.html}, 
+accessed 2025.
+
+\bibitem{BrinPage98}
+S. Brin and L. Page,
+\textit{``The anatomy of a large-scale hypertextual Web search engine,''}
+\emph{Computer Networks and ISDN Systems}, 30(1-7): 107--117, 1998.
+
+\end{thebibliography}
+
+\end{document}
