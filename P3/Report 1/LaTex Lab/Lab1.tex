@@ -391,6 +391,7 @@ eight pages labeled 1 through 8. Our tasks are:
 \end{enumerate}
 
 \subsection{Constructing the Hyperlink Matrix $H$}
+\label{sec:Fig4.4Matrix}
 
 From the diagram, we interpret each page's out-links as follows:
 \begin{itemize}
@@ -443,15 +444,22 @@ random surfer approach (Exercise~4.102).
 
 \subsection{Initial State}
 
-We set $x_0 = \bigl(\tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}\bigr)^T$, 
+We set 
+\[
+  x_0 
+  = 
+  \bigl(
+     \tfrac{1}{8},\, \tfrac{1}{8},\, \tfrac{1}{8},\, \tfrac{1}{8},\,
+     \tfrac{1}{8},\, \tfrac{1}{8},\, \tfrac{1}{8},\, \tfrac{1}{8}
+  \bigr)^T,
+\]
 giving no preference a priori to any particular page.
 
 \subsection{Finding the Steady-State PageRank}
 
 \subsubsection{(i) Iterative Method}
 We first apply the difference equation $x_{k+1} = H\,x_k$ from the uniform $x_0$. 
-Below is a minimal Python snippet:
-
+Below is our Python code (showing 15 iterations):
 \begin{verbatim}
 import numpy as np
 
@@ -477,52 +485,68 @@ print("Iterative PageRank after", num_iters, "iterations:", x_iter)
 \end{verbatim}
 
 \noindent
-Due to the zero columns, you might see some components drifting towards zero.  
-In a typical run, page~2 and page~5 may get stuck at rank~0, since they have no out-links 
-to redistribute any rank.
+\textbf{Iterative Output.} After 15~iterations, we obtain:
+\[
+  x_{\mathrm{iter}}^{(15)} 
+  \;\approx\;
+  \bigl(
+    0,\; 0,\; 0,\; 0.2109375,\; 0,\; 0,\; 0,\; 0.20703125
+  \bigr)^T.
+\]
+Notice that pages~4 and~8 are nonzero (around 0.2109 and 0.2070, respectively), summing 
+to roughly 0.41797.  The other pages have zero rank at this iteration.  The total rank 
+is less than 1 because probability that lands on pages with no out-links (e.g.\ page~2, 
+page~5) never returns to the rest of the system.
 
 \subsubsection{(ii) Eigenvalue Method (Theorem 4.9)}
-In principle, we can solve $(I - H)x^*=0$, $\sum_i x_i^*=1$ to find the dominant 
-eigenvector (for $\lambda=1$).  However, because the matrix is not strictly irreducible, 
-the $\lambda=1$ eigenvector might place zero weight on pages~2 and~5.  
-Nonetheless, we demonstrate the numerical approach:
+By directly solving $(I - H)x^*=0$ (plus $\sum_i x_i^*=1$), we find the eigenvector 
+associated with the eigenvalue 1.  The code below demonstrates:
 
 \begin{verbatim}
 vals, vecs = np.linalg.eig(H)
 idx = np.argmin(np.abs(vals - 1.0))  # eigenvalue near 1
 x_eig = vecs[:, idx]
 pagerank_eig = np.real(x_eig / np.sum(x_eig))
+
 print("Eigenvalue-based PageRank:", pagerank_eig)
 \end{verbatim}
 
 \noindent
-Both methods will yield the same final distribution for pages that are part of the non-dangling sub-web.
+\textbf{Eigenvalue Output.}  We obtain
+\[
+  x_{\mathrm{eig}}
+  \;=\;
+  \bigl(
+    0,\;0,\;0,\;0.5,\;0,\;0,\;0,\;0.5
+  \bigr)^T,
+\]
+which sums to 1.  That means pages~4 and~8 end up with all the surviving probability 
+in the limit, since they form a strongly connected pair that links only to each other.
 
 \subsection{Ranking the Pages}
-Finally, we compare the entries of $x_{\text{iter}}$ or $x_{\text{eig}}$. 
-Suppose the steady-state solution looks like:
-\[
-(\,0,\; 0.15,\; 0.25,\; 0.20,\; 0,\; 0.10,\; 0.20,\; 0.10\,)^T
-\quad\text{(example only)}.
-\]
-Then the ordering from most to least important might be
-\[
-\text{Page~3} \;>\; \text{Page~7} \;>\; \text{Page~4} \;>\; \text{Page~2} \;>\; \ldots
-\]
-\emph{(Adjust to your actual computed values.)}
 
-\bigskip
-\noindent
-\textbf{Conclusion for Figure 4.4:} 
-We see that pages with zero out-degree (2 and~5) typically wind up with rank~0 
-in this simple model.  Pages within the strongly connected component (e.g.\ 4 and~8, 
-and others reachable from 7 or 1) can accumulate all the rank.  This completes 
-Exercise~4.101: we have 
-\begin{enumerate}
-  \item Written the $H$ matrix and chosen $x_0$,
-  \item Found the steady state using two methods,
-  \item Ranked the pages in order of importance.
-\end{enumerate}
+Because pages~4 and~8 \emph{alone} receive nonzero rank in the long run, they tie for 
+the top spot at 0.5 each.  Every other page goes to zero rank due to 
+\emph{dangling nodes} (pages~2, 5) or incomplete connectivity.  Hence, the final 
+ranking from highest to lowest is:
+\[
+  \{\,4,\;8\} \quad>\quad 
+  \{\,1,\;2,\;3,\;5,\;6,\;7\} 
+  \quad(\text{all zero}).
+\]
+The iterative method at 15~iterations shows partial accumulation on pages~4 and~8 
+(about 0.42 total), but with an additional 0.58 effectively ``lost'' to pages~2 or~5.  
+\emph{Further iterations} would drive $x_{\mathrm{iter}}$ closer to $(0,0,0,0.5,0,0,0,0.5)$ 
+as $k\to\infty.$
+
+\begin{quote}
+\textbf{Conclusion for Figure 4.4:} In a pure follow-the-links model with no 
+teleportation, pages~4 and~8 form a closed subcomponent; 
+they eventually capture all rank that is not lost to the zero-out-degree pages. 
+Thus the steady state is $(0,0,0,0.5,0,0,0,0.5)^T.$  This completes our analysis 
+of Exercise~4.101.
+\end{quote}
+
 
 
 
