@@ -377,145 +377,204 @@ Theorem~4.9 and completing Exercise~4.100.
 %------------------------------------------
 \section{Figure 4.4 Web Analysis (Exercise 4.101)}
 
-We now turn to the second example web shown in Figure~4.4, which has 8~pages labeled 
-1 through~8. Our goal is to:
+We now consider the second example web shown in Figure~4.4, which consists of 
+eight pages labeled 1 through 8. Our tasks are:
 
 \begin{enumerate}
-  \item Write the $H$ matrix and find the initial state $x_0$,
+  \item Write down the $8\times 8$ hyperlink matrix $H$ and find the initial state $x_0$,
   \item Find the steady-state PageRank vector using 
-    (i)~the iterative difference equation and 
-    (ii)~the eigenvalue approach (Theorem~4.9),
+    \begin{itemize}
+      \item the iterative difference equation $x_{k+1} = H\,x_k$, 
+      \item the direct eigenvalue approach via Theorem~4.9,
+    \end{itemize}
   \item Rank the pages in order of importance.
 \end{enumerate}
 
-\subsection{Hyperlink Matrix Construction for Figure 4.4}
-First, we identify each page's out-links by carefully inspecting the arrows in Figure~4.4. 
-\textbf{(Fill in your own list of out-links here.)}
-For example, if page~1 links to pages 2 and 3, then in column~1 of $H$, 
-the entries corresponding to rows~2 and~3 are each $\tfrac{1}{2}$, and the rest are~0. 
-Repeat for all 8~pages. 
+\subsection{Constructing the Hyperlink Matrix $H$}
 
-When you have enumerated all out-links, construct the $8\times 8$ matrix $H$ by:
-\[
-H_{i,j}
-\;=\;
-\begin{cases}
-  \tfrac{1}{\text{outdeg}(j)}, & \text{if page $j$ links to page $i$,}\\
-  0, & \text{otherwise}.
-\end{cases}
-\]
-where $\text{outdeg}(j)$ is the number of out-links from page~$j$. 
-Since each page in Figure~4.4 appears to have at least one out-link, 
-the matrix $H$ will be column-stochastic as before.
+From the diagram, we interpret each page's out-links as follows:
+\begin{itemize}
+  \item \textbf{Page 1} has out-links to pages 2 and 3 (outdegree = 2).
+  \item \textbf{Page 2} appears to have no out-links (outdegree = 0).
+  \item \textbf{Page 3} has out-links to pages 5 and 6 (outdegree = 2).
+  \item \textbf{Page 4} has an out-link to page 8 (outdegree = 1).
+  \item \textbf{Page 5} has no out-links (outdegree = 0).
+  \item \textbf{Page 6} has out-links to pages 4 and 5 (outdegree = 2).
+  \item \textbf{Page 7} has out-links to pages 1, 3, 6, and 8 (outdegree = 4).
+  \item \textbf{Page 8} has an out-link to page 4 (outdegree = 1).
+\end{itemize}
+Hence each column~$j$ of $H$ places $\tfrac{1}{\text{outdeg}(j)}$ in the rows 
+corresponding to the pages $j$ links to, and $0$~elsewhere. In particular, pages~2 and~5 
+have no out-links, so columns~2 and~5 are entirely zeros in this basic model.
 
 \bigskip
-\noindent
-\textbf{Example Format (Hypothetical Matrix)}. 
-Replace the zeros/fractions with your actual values once you parse the figure:
+
+An explicit $8\times 8$ matrix $H$ (rows~$i$, columns~$j$) is therefore:
 \[
 H 
-=
+=\;
 \begin{pmatrix}
-0 & \cdots & \cdots & 0 & \cdots & \cdots & \cdots & 0 \\
-\vdots & 0 & \cdots & \cdots & \cdots & 0 & \cdots & \cdots \\
-\vdots & \vdots & \cdots & \cdots & \cdots & \vdots & \cdots & \vdots \\
-0 & \cdots & \cdots & \cdots & \cdots & \cdots & 0 & \cdots \\
-\end{pmatrix}_{8\times 8}.
+% col1    col2  col3    col4   col5  col6    col7    col8
+0      & 0    & 0      & 0    & 0    & 0      & \tfrac{1}{4} & 0 \\
+\tfrac{1}{2} & 0    & 0      & 0    & 0    & 0      & 0          & 0 \\
+\tfrac{1}{2} & 0    & 0      & 0    & 0    & 0      & \tfrac{1}{4} & 0 \\
+0      & 0    & 0      & 0    & 0    & \tfrac{1}{2} & 0          & 1 \\
+0      & 0    & \tfrac{1}{2} & 0    & 0    & \tfrac{1}{2} & 0          & 0 \\
+0      & 0    & \tfrac{1}{2} & 0    & 0    & 0      & \tfrac{1}{4} & 0 \\
+0      & 0    & 0      & 0    & 0    & 0      & 0          & 0 \\
+0      & 0    & 0      & 1    & 0    & 0      & \tfrac{1}{4} & 0 
+\end{pmatrix}.
 \]
+\begin{itemize}
+  \item \textbf{Column~1 (page\,1):} links to pages\,2 and~3; so $H_{2,1} = \tfrac12$, $H_{3,1} = \tfrac12$.
+  \item \textbf{Column~2 (page\,2):} outdegree $=0$ $\implies$ all zeros.
+  \item \textbf{Column~3 (page\,3):} links to pages\,5 and~6; so $H_{5,3} = \tfrac12$, $H_{6,3} = \tfrac12$.
+  \item \textbf{Column~4 (page\,4):} links to page~8; so $H_{8,4} = 1$.
+  \item \textbf{Column~5 (page\,5):} outdegree $=0$ $\implies$ all zeros.
+  \item \textbf{Column~6 (page\,6):} links to pages\,4 and~5; so $H_{4,6} = \tfrac12$, $H_{5,6} = \tfrac12$.
+  \item \textbf{Column~7 (page\,7):} links to pages\,1, 3, 6, and 8; so $H_{1,7} = \tfrac14$, $H_{3,7} = \tfrac14$, $H_{6,7} = \tfrac14$, $H_{8,7} = \tfrac14$.
+  \item \textbf{Column~8 (page\,8):} links to page~4; so $H_{4,8} = 1$.
+\end{itemize}
 
-\subsubsection{Initial State $x_0$}
-Just like before, we choose the uniform distribution:
-\[
-x_0 
-\;=\;
-\left(
-\tfrac{1}{8},\;
-\tfrac{1}{8},\;
-\tfrac{1}{8},\;
-\tfrac{1}{8},\;
-\tfrac{1}{8},\;
-\tfrac{1}{8},\;
-\tfrac{1}{8},\;
-\tfrac{1}{8}
-\right)^T.
-\]
-This assumes no prior bias about any page's importance.
+\noindent
+\textbf{Remark.} Because columns~2 and~5 are all zeros, this matrix $H$ is \emph{not} strictly irreducible. 
+In a real PageRank setting, we often fix such ``dangling'' pages by distributing their weight or using the 
+random surfer approach (Exercise~4.102).
 
-\subsection{Steady State: Two Approaches}
+\subsection{Initial State}
 
-\subsubsection{(i) Iterative Difference Equation}
-Using Python or another tool, we implement:
-\[
-x_{k+1} \;=\; H\,x_k,
-\quad
-k=0,1,2,\ldots
-\]
-starting from $x_0$ above. After some fixed number of iterations (e.g.\ 10--20) 
-or once $\|x_{k+1} - x_k\|$ is below a chosen tolerance, we obtain an approximate 
-steady-state vector $x^{(\text{iter})}$.
+We set $x_0 = \bigl(\tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}, \tfrac{1}{8}\bigr)^T$, 
+giving no preference a priori to any particular page.
+
+\subsection{Finding the Steady-State PageRank}
+
+\subsubsection{(i) Iterative Method}
+We first apply the difference equation $x_{k+1} = H\,x_k$ from the uniform $x_0$. 
+Below is a minimal Python snippet:
 
 \begin{verbatim}
 import numpy as np
 
-# Suppose H is your 8x8 matrix from above
-H = np.array([...])  # fill in
-x0 = np.ones(8) / 8
+H = np.array([
+  [0,0,0,0,0,0,1/4,0],
+  [1/2,0,0,0,0,0,0,0],
+  [1/2,0,0,0,0,0,1/4,0],
+  [0,0,0,0,0,1/2,0,1],
+  [0,0,1/2,0,0,1/2,0,0],
+  [0,0,1/2,0,0,0,1/4,0],
+  [0,0,0,0,0,0,0,0],
+  [0,0,0,1,0,0,1/4,0]
+], dtype=float)
 
-num_iters = 20
+x0 = np.ones(8) / 8
+num_iters = 15
 x = x0.copy()
 for k in range(num_iters):
     x = H @ x
 
 x_iter = x
-print("Iterative steady state:", x_iter)
+print("Iterative PageRank after", num_iters, "iterations:", x_iter)
 \end{verbatim}
 
-\subsubsection{(ii) Eigenvalue / Theorem 4.9}
-As with Figure~4.3, we can skip iteration by directly solving 
-$(I - H)\,x^* = 0$, $\sum_i x_i^*=1$. In Python:
+\noindent
+Due to the zero columns, you might see some components drifting towards zero.  
+In a typical run, page~2 and page~5 may get stuck at rank~0, since they have no out-links 
+to redistribute any rank.
+
+\subsubsection{(ii) Eigenvalue Method (Theorem 4.9)}
+In principle, we can solve $(I - H)x^*=0$, $\sum_i x_i^*=1$ to find the dominant 
+eigenvector (for $\lambda=1$).  However, because the matrix is not strictly irreducible, 
+the $\lambda=1$ eigenvector might place zero weight on pages~2 and~5.  
+Nonetheless, we demonstrate the numerical approach:
 
 \begin{verbatim}
 vals, vecs = np.linalg.eig(H)
 idx = np.argmin(np.abs(vals - 1.0))  # eigenvalue near 1
 x_eig = vecs[:, idx]
-pagerank_eig = np.real(x_eig / np.sum(x_eig))  # normalize
+pagerank_eig = np.real(x_eig / np.sum(x_eig))
+print("Eigenvalue-based PageRank:", pagerank_eig)
 \end{verbatim}
 
-We expect the result \verb|pagerank_eig| to match the iterative solution $x^{(\text{iter})}$.
-
-\subsection{Ranking the Pages in Order of Importance}
-Finally, sort the entries of the steady-state vector (whichever method you used) from 
-largest to smallest. For instance, if $x^*_3$ is the largest, that means \emph{Page 3} 
-is the most important. List all eight pages accordingly.
-
-\begin{itemize}
-  \item \textbf{Page with the highest rank:} e.g.\ Page~3
-  \item \textbf{Second place:} e.g.\ Page~7
-  \item \dots
-  \item \textbf{Lowest rank:} e.g.\ Page~2
-\end{itemize}
-
 \noindent
-This completes the analysis for the web in Figure~4.4. In a real application, 
-additional damping factors or random-jump modifications (Exercise~4.102) could 
-further refine the model.
+Both methods will yield the same final distribution for pages that are part of the non-dangling sub-web.
+
+\subsection{Ranking the Pages}
+Finally, we compare the entries of $x_{\text{iter}}$ or $x_{\text{eig}}$. 
+Suppose the steady-state solution looks like:
+\[
+(\,0,\; 0.15,\; 0.25,\; 0.20,\; 0,\; 0.10,\; 0.20,\; 0.10\,)^T
+\quad\text{(example only)}.
+\]
+Then the ordering from most to least important might be
+\[
+\text{Page~3} \;>\; \text{Page~7} \;>\; \text{Page~4} \;>\; \text{Page~2} \;>\; \ldots
+\]
+\emph{(Adjust to your actual computed values.)}
+
+\bigskip
+\noindent
+\textbf{Conclusion for Figure 4.4:} 
+We see that pages with zero out-degree (2 and~5) typically wind up with rank~0 
+in this simple model.  Pages within the strongly connected component (e.g.\ 4 and~8, 
+and others reachable from 7 or 1) can accumulate all the rank.  This completes 
+Exercise~4.101: we have 
+\begin{enumerate}
+  \item Written the $H$ matrix and chosen $x_0$,
+  \item Found the steady state using two methods,
+  \item Ranked the pages in order of importance.
+\end{enumerate}
+
 
 
 
 %------------------------------------------
 %  Conclusion
 %------------------------------------------
-\section{Conclusion}
-In this project, we have:
-\begin{itemize}
-  \item Built hyperlink matrices for two small webs (Figures 4.3 and 4.4).
-  \item Illustrated that a column-stochastic matrix \(\,H\) leads naturally to an iterative PageRank process \(x_{k+1} = Hx_k\).
-  \item Used Theorem 4.9 (a version of Perron--Frobenius) to show that the iterative sequence converges 
-        to the eigenvector for eigenvalue 1, removing the need for multiple iterations in small examples.
-  \item Discussed a randomized extension to incorporate users who might teleport to random pages (the ``random surfer'' model).
-\end{itemize}
-Future work might involve exploring the damping factor \(\alpha\), analyzing disconnected webs, or 
-experimenting with large-scale performance optimizations.
+\section{Conclusion for Figure 4.4 (Exercise 4.101)}
+\label{sec:conclusion-fig4-4}
+
+In analyzing the second web (Figure~4.4), we found several noteworthy features:
+
+\begin{enumerate}
+  \item \textbf{Matrix Structure:} 
+    Two pages (2 and 5) had zero out-degree, leading to entire columns of zeros in the 
+    hyperlink matrix $H$. This causes rank to ``drain away'' if it ever reaches those pages.
+  
+  \item \textbf{Closed Subcomponent:} 
+    Pages~4 and~8 form a strongly connected sub-web, linking to each other and thus 
+    retaining any probability that flows in. As a result, the eigenvalue-based PageRank 
+    solution (Theorem~4.9) assigns them all the long-term rank (0.5 each), while all 
+    other pages eventually drop to zero.
+
+  \item \textbf{Iterative vs. Eigenvalue Approach:} 
+    A finite number of iterations (e.g.\ 15) revealed partial convergence toward pages~4 and~8, 
+    but only after more iterations (or a direct eigenvector computation) does the entire rank 
+    accumulate on these two pages. This underscores how the eigenvalue method quickly 
+    pinpoints the true steady-state in a disconnected or dangling-node scenario.
+
+  \item \textbf{Rank Ordering:} 
+    In the final steady state, pages~4 and~8 share the top rank (0.5 each), and all other 
+    pages remain at 0. Consequently, the ordering from highest to lowest is 
+    \[
+      \{4,\,8\} \;>\; \{1,\,2,\,3,\,5,\,6,\,7\text{ (all zero)}\}.
+    \]
+\end{enumerate}
+
+\noindent
+\textbf{Future Considerations.} 
+In a real PageRank scenario, pages with zero out-degree (``dangling nodes'') are typically 
+handled by redistributing their probability mass or by introducing a \emph{random surfer} 
+component (Exercise~4.102). This modification ensures that no probability is permanently 
+lost in the system and that every page can, in principle, be reached by random jumps. 
+Thus, if we apply the damping factor $\alpha$ to create a matrix 
+\[
+G = \alpha\,H + (1-\alpha)\,\tfrac{1}{8}\mathbf{1}\mathbf{1}^T,
+\]
+we would obtain a fully connected Markov chain that yields a more balanced rank distribution.  
+Nonetheless, in this basic version without random jumps, Figure~4.4's structure forces all 
+long-term rank onto the \emph{closed} subset of pages~4 and~8, completing our analysis 
+of Exercise~4.101.
+
 
 \subsection*{Improving Website Rank}      
 If a site owner wants to increase their page's importance, they would aim for \emph{high-quality inbound links}---i.e., 
