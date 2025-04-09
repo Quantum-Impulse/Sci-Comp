@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1744222672.67164 "/Users/enriquerivera/Documents/School/Y4S2/Sci Comp/P3/Report 1/LaTex Lab/Lab1.tex" "Lab1.pdf" "Lab1" 1744222673.49432 0
-  "/Users/enriquerivera/Documents/School/Y4S2/Sci Comp/P3/Report 1/LaTex Lab/Lab1.tex" 1744222671.15347 23959 755459f5268e180dafa7769529d1be89 ""
+["pdflatex"] 1744223012.32366 "/Users/enriquerivera/Documents/School/Y4S2/Sci Comp/P3/Report 1/LaTex Lab/Lab1.tex" "Lab1.pdf" "Lab1" 1744223013.16235 0
+  "/Users/enriquerivera/Documents/School/Y4S2/Sci Comp/P3/Report 1/LaTex Lab/Lab1.tex" 1744223011.96926 23982 5015e08c13030a5c1bc8bf8f1a12dded ""
   "/Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/data/fonts/map/pdftex/pdftex.map" 1740535302.04623 29004 acf646c5ef3591b269607c4eb31b7abd ""
   "/Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/data/fonts/pk/ljfour/jknappen/ec/dpi600/tcrm1000.pk" 1726537808.67697 11548 b101187c2ab8a47c6f9f0b6787b527f5 ""
   "/Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/data/miktex/data/le/pdftex/pdflatex.fmt" 1741302525.88105 8733516 731d53d05c9d6cf4c9c5e1a2be7f7b91 ""
@@ -108,9 +108,9 @@
   "/Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/latex/refcount/refcount.sty" 1726529977.5989 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "/Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1726529993.8731 9714 ba3194bd52c8499b3f1e3eb91d409670 ""
   "/Users/enriquerivera/Library/Application Support/MiKTeX/texmfs/install/tex/latex/url/url.sty" 1726529987.55577 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
-  "Lab1.aux" 1744222673.33912 4459 d550689418c3c4782ebc0e4b33ba8407 "pdflatex"
-  "Lab1.out" 1744222673.34035 3469 9cbe2106b465e774374e7efe9772a037 "pdflatex"
-  "Lab1.tex" 1744222671.15347 23959 755459f5268e180dafa7769529d1be89 ""
+  "Lab1.aux" 1744223013.00451 4459 1d77b9f9acccfe4c090d92ad1fbc2195 "pdflatex"
+  "Lab1.out" 1744223013.00543 3469 9cbe2106b465e774374e7efe9772a037 "pdflatex"
+  "Lab1.tex" 1744223011.96926 23982 5015e08c13030a5c1bc8bf8f1a12dded ""
   "img/Node_Tree_4.3.png" 1744222416.89878 76167 3ad6968ba4508150735d4b5de3df5707 ""
   "img/Node_Tree_4.4.png" 1744222443.22516 69732 d2ef7d42eaf2d2b66ff7b6772161954e ""
   "img/PageRank Convergence via Iteration.png" 1744063451.40866 45290 4ac9a5362e49b77a56547beff1b85ebc ""
