@@ -1,0 +1,190 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}   % For math symbols
+\usepackage{graphicx}          % For including figures
+\usepackage{booktabs}          % For nicer tables
+\usepackage{hyperref}          % For clickable links (references)
+\usepackage{color}             % (Optional) For color if needed
+\title{\textbf{The Two-Body Problem}}
+\author{Christine Kim, Enrique Rivera \\ University of Texas at Austin}
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+
+%------------------------------------------
+%  Abstract
+%------------------------------------------
+\begin{abstract}
+In this paper, we investigate the classical two-body problem under Newtonian gravitation by numerically solving the governing differential equations using a Runge-Kutta method. By reducing the system to a one-body problem in a center-of-mass frame, we analyze orbital trajectories across varying mass ratios (1:1, 1:2, 1:4, 1:16) and eccentricities (0, 0.25, 0.50, 0.75). A total of sixteen configurations were simulated to observe the influence of these parameters on orbital behavior, ranging from circular to elliptical paths. The study demonstrates how increasing eccentricity elongates orbits, while varying mass ratios shift the relative motion of the two bodies. The results provide visualizations of orbital dynamics and reinforce theoretical expectations from gravitational mechanics.
+\end{abstract}
+
+%------------------------------------------
+%  Keywords
+%------------------------------------------
+\textbf{Keywords:} orbit,
+
+%------------------------------------------
+%  Introduction
+%------------------------------------------
+\section{Introduction}
+The two-body problem is a cornerstone of classical mechanics, describing the motion of two masses interacting through mutual gravitational attraction. Rooted in Newton’s laws and the universal law of gravitation, this problem has applications spanning celestial mechanics, astrophysics, and orbital dynamics. While an exact analytical solution exists for ideal cases, numerical methods are essential for exploring a broader range of initial conditions and parameter variations.
+
+By transforming the original system into a center-of-mass coordinate frame, the two-body problem simplifies to an equivalent one-body problem governed by a set of nonlinear differential equations. This reduction allows for efficient computation of orbital trajectories, particularly when investigating how different physical parameters—such as mass ratio and orbital eccentricity—affect system behavior.
+
+In this project, we implement a numerical solver to simulate orbital motion for various configurations of mass ratios and eccentricities. Specifically, we examine four mass ratios (1:1, 1:2, 1:4, and 1:16) combined with four eccentricity values (0, 0.25, 0.50, and 0.75), resulting in sixteen unique scenarios. These simulations provide insight into the transition from circular to increasingly elongated elliptical orbits, as well as the shifting dynamics introduced by asymmetric mass distributions. Through this exploration, we aim to visualize and validate fundamental principles of gravitational motion while demonstrating the effectiveness of numerical methods in solving classical mechanics problems.
+
+
+
+% Eccentricity = 0
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc0_MR1.1.png}
+    \caption{The orbit graph at Eccentricity = 0 and Mass Ratio = 1:1}
+    \label{fig:ecc0_mr1.1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc0_MR1.2.png}
+    \caption{The orbit graph at Eccentricity = 0 and Mass Ratio = 1:2}
+    \label{fig:ecc0_mr1.2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc0_MR1.4.png}
+    \caption{The orbit graph at Eccentricity = 0 and Mass Ratio = 1:4}
+    \label{fig:ecc0_mr1.4}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc0_MR1.16.png}
+    \caption{The orbit graph at Eccentricity = 0 and Mass Ratio = 1:16}
+    \label{fig:ecc0_mr1.16}
+\end{figure}
+
+% Eccentricity = .25
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.25_MR1.1.png}
+    \caption{The orbit graph at Eccentricity = 0.25 and Mass Ratio = 1:1}
+    \label{fig:ecc.25_mr1.1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.25_MR1.2.png}
+    \caption{The orbit graph at Eccentricity = 0.25 and Mass Ratio = 1:2}
+    \label{fig:ecc.25_mr1.2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.25_MR1.4.png}
+    \caption{The orbit graph at Eccentricity = 0.25 and Mass Ratio = 1:4}
+    \label{fig:ecc.25_mr1.4}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.25_MR1.16.png}
+    \caption{The orbit graph at Eccentricity = 0.25 and Mass Ratio = 1:16}
+    \label{fig:ecc.25_mr1.16}
+\end{figure}
+
+% Eccentricity = .5
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.5_MR1.1.png}
+    \caption{The orbit graph at Eccentricity = 0.5 and Mass Ratio = 1:1}
+    \label{fig:ecc.5_mr1.1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.5_MR1.2.png}
+    \caption{The orbit graph at Eccentricity = 0.5 and Mass Ratio = 1:2}
+    \label{fig:ecc.5_mr1.2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.5_MR1.4.png}
+    \caption{The orbit graph at Eccentricity = 0.5 and Mass Ratio = 1:4}
+    \label{fig:ecc.5_mr1.4}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.5_MR1.16.png}
+    \caption{The orbit graph at Eccentricity = 0.5 and Mass Ratio = 1:16}
+    \label{fig:ecc.5_mr1.16}
+\end{figure}
+
+% Eccentricity = .75
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.75_MR1.1.png}
+    \caption{The orbit graph at Eccentricity = 0.75 and Mass Ratio = 1:1}
+    \label{fig:ecc.75_mr1.1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.75_MR1.2.png}
+    \caption{The orbit graph at Eccentricity = 0.75 and Mass Ratio = 1:2}
+    \label{fig:ecc.75_mr1.2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.75_MR1.4.png}
+    \caption{The orbit graph at Eccentricity = 0.75 and Mass Ratio = 1:4}
+    \label{fig:ecc.75_mr1.4}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.75_MR1.16.png}
+    \caption{The orbit graph at Eccentricity = 0.75 and Mass Ratio = 1:16}
+    \label{fig:ecc.75_mr1.16}
+\end{figure}
+
+
+%------------------------------------------
+
+%------------------------------------------
+\section{2 - }
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{cs323e-p4/OrbitGraph_Ecc.75_MR1.16.png}
+    \caption{The orbit graph at Eccentricity = 0.75 and Mass Ratio = 1:16}
+    \label{fig:ecc.75_mr1.16}
+\end{figure}
+
+
+%------------------------------------------
+%  References
+%------------------------------------------
+\begin{thebibliography}{9}
+
+\bibitem{Sullivan2025Linear}
+W. Sullivan,
+\textit{``6 Partial Differential Equations | Numerical Methods,''},
+\url{https://numericalmethodssullivan.github.io/ch-6 Partial Differential Equations.html}, 
+accessed 2025.
+
+\bibitem{BrinPage98}
+S. Brin and L. Page,
+\textit{``The anatomy of a large-scale hypertextual Web search engine,''}
+\emph{Computer Networks and ISDN Systems}, 30(1-7): 107--117, 1998.
+
+\end{thebibliography}
+
+\end{document}
